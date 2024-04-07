@@ -22,4 +22,10 @@ class AudioProcessor:
                 log_index = len(event.logs)
 
         result = await handler.get()
-        return result["audio"]["url"]
+
+        if "audio" in result and "url" in result["audio"]:
+            return result["audio"]["url"]
+        else:
+            # Handle the case when the "audio" key is not found or doesn't have a "url" key
+            print("Error: Audio URL not found in the response.")
+            return None  # Return a default value or raise an exception
