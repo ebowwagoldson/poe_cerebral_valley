@@ -1,31 +1,20 @@
+import asyncio
 import fal_client
 
-class AudioProcessor:
-    def __init__(self, fal_client):
-        self.fal_client = fal_client
+text = "The HTTP 404 Not Found response status code indicates that the server cannot find the requested resource. Links that lead to a 404 page are often called broken or dead links and can be subject to link rot."
 
-    async def generate_speech(self, text):
-        handler = await self.fal_client.submit(
-            "fal-ai/metavoice-v1",
-            arguments={
-                "text": text,
-                "audio_url": "https://cdn.themetavoice.xyz/speakers/bria.mp3"
-            },
-        )
+async def synthesize_speech():
+    handler = await fal_client.submit_async(
+        "fal-ai/metavoice-v1",
+        arguments={
+            "text": text,
+            "audio_url": "https://cdn.themetavoice.xyz/speakers/bria.mp3"  
+        },
+    )
 
-        log_index = 0
-        async for event in handler.iter_events(with_logs=True):
-            if isinstance(event, fal_client.InProgress):
-                new_logs = event.logs[log_index:]
-                for log in new_logs:
-                    print(log["message"])
-                log_index = len(event.logs)
+    result = await handler.get()
+    audio_url = result["audio_url"]["url"]
+    print(f"Synthesized speech audio URL: {audio_url}")
+    return audio_url
 
-        result = await handler.get()
-
-        if "audio" in result and "url" in result["audio"]:
-            return result["audio"]["url"]
-        else:
-            # Handle the case when the "audio" key is not found or doesn't have a "url" key
-            print("Error: Audio URL not found in the response.")
-            return None  # Return a default value or raise an exception
+asyncio.run(synthesize_speech())
